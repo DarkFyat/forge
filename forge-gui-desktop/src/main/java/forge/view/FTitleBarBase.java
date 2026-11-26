@@ -20,6 +20,7 @@ import javax.swing.SwingUtilities;
 import forge.control.FControl;
 import forge.download.AutoUpdater;
 import forge.gui.framework.ILocalRepaint;
+import forge.toolbox.FDesign;
 import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.Colors;
 import forge.toolbox.FSkin.SkinColor;
@@ -37,10 +38,10 @@ public abstract class FTitleBarBase extends SkinnedMenuBar {
     protected static final SkinColor foreColor = FSkin.getColor(Colors.CLR_TEXT);
     protected static final SkinColor backColor = FSkin.getColor(Colors.CLR_THEME2);
     protected static final SkinColor bottomEdgeColor = FSkin.getColor(Colors.CLR_BORDERS).stepColor(0);
-    protected static final SkinColor buttonBorderColor = backColor.stepColor(-80);
-    protected static final SkinColor buttonHoverColor = backColor.stepColor(40);
-    protected static final SkinColor buttonDownColor = backColor.stepColor(-40);
-    protected static final SkinColor buttonToggleColor = backColor.stepColor(-30);
+    protected static final SkinColor buttonBorderColor = FSkin.getColor(Colors.CLR_BORDERS).stepColor(0);
+    protected static final SkinColor buttonHoverColor = FSkin.getColor(Colors.CLR_HOVER);
+    protected static final SkinColor buttonDownColor = FSkin.getColor(Colors.CLR_ACTIVE).stepColor(-60);
+    protected static final SkinColor buttonToggleColor = FSkin.getColor(Colors.CLR_THEME).stepColor(0);
 
     protected final ITitleBarOwner owner;
     protected final SpringLayout layout = new SpringLayout();
@@ -207,22 +208,18 @@ public abstract class FTitleBarBase extends SkinnedMenuBar {
         @Override
         public void paintComponent(Graphics g) {
             if (hovered) {
+                g.setColor(pressed ? FDesign.ACCENT_PRESSED : FDesign.HOVER);
+                g.fillRect(0, 0, getWidth(), getHeight());
                 if (pressed) {
-                    FSkin.setGraphicsColor(g, buttonDownColor);
-                    g.fillRect(0, 0, getWidth(), getHeight());
                     g.translate(1, 1); //translate icon to give pressed button look
-                }
-                else {
-                    FSkin.setGraphicsColor(g, buttonHoverColor);
-                    g.fillRect(0, 0, getWidth(), getHeight());
                 }
             }
             else if (isToggled()) {
                 int width = getWidth() - 2;
                 int height = getHeight() - 2;
-                FSkin.setGraphicsColor(g, buttonToggleColor);
+                g.setColor(FDesign.SURFACE_SOFT);
                 g.fillRect(1, 1, width, height);
-                FSkin.setGraphicsColor(g, buttonBorderColor);
+                g.setColor(FDesign.ACCENT);
                 g.drawRect(1, 1, width - 1, height - 1);
             }
         }

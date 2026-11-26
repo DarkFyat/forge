@@ -1,0 +1,62 @@
+name: Desktop UI test installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - arena/e47c6880-forge
+    paths:
+      - .github/workflows/desktop-test-installer.yml
+
+permissions:
+  contents: write
+
+jobs:
+  installer:
+    name: Build and publish preview installer
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Build Windows and Linux installer
+        run: mvn -B -P windows-linux -DskipTests install
+      - name: Verify installer and prepare download
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          installers=(forge-installer/target/forge-installer-*.jar)
+          if [ "${#installers[@]}" -ne 1 ]; then
+            echo "Expected exactly one installer JAR, found ${#installers[@]}" >&2
+            ls -lh forge-installer/target >&2
+            exit 1
+          fi
+          mkdir -p preview-release
+          cp "${installers[0]}" preview-release/forge-desktop-ui-preview-installer.jar
+          unzip -tq preview-release/forge-desktop-ui-preview-installer.jar
+          unzip -p preview-release/forge-desktop-ui-preview-installer.jar META-INF/MANIFEST.MF | grep -i '^Main-Class:'
+          sha256sum preview-release/forge-desktop-ui-preview-installer.jar > preview-release/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forge-desktop-ui-preview-installer
+          path: preview-release/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="desktop-ui-preview-${GITHUB_SHA:0:8}"
+          gh release create "$tag" preview-release/* \
+            --target "$GITHUB_SHA" \
+            --title "Forge desktop UI preview (${GITHUB_SHA:0:8})" \
+            --notes "Experimental desktop UI test build from the development branch. Requires Java 17 or newer. Install into a separate folder and back up existing Forge data; this is not a stable release." \
+            --prerelease

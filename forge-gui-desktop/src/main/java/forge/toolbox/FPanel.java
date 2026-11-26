@@ -50,8 +50,8 @@ import forge.toolbox.FSkin.SkinColor;
  */
 @SuppressWarnings("serial")
 public class FPanel extends FPanelBase implements ILocalRepaint {
-    private static final SkinColor selectedColor = FSkin.getColor(FSkin.Colors.CLR_ACTIVE);
-    private static final SkinColor hoveredColor = FSkin.getColor(FSkin.Colors.CLR_HOVER);
+    private static final SkinColor selectedColor = FSkin.getColor(FSkin.Colors.CLR_HOVER);
+    private static final SkinColor hoveredColor = FSkin.getColor(FSkin.Colors.CLR_ZEBRA);
     private static final SkinColor unselectedColor = FSkin.getColor(FSkin.Colors.CLR_INACTIVE);
 
     // Defaults for adjustable values
@@ -63,7 +63,7 @@ public class FPanel extends FPanelBase implements ILocalRepaint {
     private Color   backgroundTextureOverlay = null;
     private SkinColor borderColor = FSkin.getColor(FSkin.Colors.CLR_BORDERS);
     private boolean borderToggle        = true;
-    private int     cornerDiameter      = 20;
+    private int     cornerDiameter      = FDesign.RADIUS;
     private int     foregroundAlign     = SwingConstants.CENTER;
 
     // Mouse handling
