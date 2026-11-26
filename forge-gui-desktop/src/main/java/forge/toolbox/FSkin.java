@@ -464,6 +464,13 @@ public class FSkin {
         }
 
         private void updateColor() {
+            // The built-in theme uses the Arcane Glass design tokens. Custom skins
+            // continue to supply their own colour swatches in sprite_icons.png.
+            if (FDesign.isBuiltInTheme(preferredName)) {
+                color = FDesign.colorFor(this);
+                return;
+            }
+
             int[] tempCoords = skinProp.getCoords();
             x0 = tempCoords[0];
             y0 = tempCoords[1];
@@ -1699,6 +1706,9 @@ public class FSkin {
                 setTabbedPaneLookAndFeel();
                 setButtonLookAndFeel();
                 setToolTipLookAndFeel();
+                if (FDesign.isBuiltInTheme(preferredName)) {
+                    FDesign.installUIDefaults();
+                }
                 setTextEditLookAndFeel();
             }
             onInit = false;
@@ -2353,12 +2363,6 @@ public class FSkin {
                 }
             };
 
-            private static final SkinColor backColor = getColor(Colors.CLR_THEME2);
-            private static final SkinColor borderColor = getColor(Colors.CLR_TEXT);
-            private static final SkinColor grooveColor = borderColor.alphaColor(200);
-            private static final AlphaComposite alphaDim = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f);
-            private static final int grooveSpace = 3;
-
             private final boolean vertical;
             private boolean hovered;
             private MouseAdapter hoverListener;
@@ -2420,92 +2424,11 @@ public class FSkin {
 
             @Override
             protected void paintThumb(final Graphics g, final JComponent c, final Rectangle thumbBounds) {
-                int x = thumbBounds.x;
-                int y = thumbBounds.y;
-                int width = thumbBounds.width - 1;
-                int height = thumbBounds.height - 1;
-
-                //build polygon for thumb
-                int[] xPoints, yPoints;
-                if (vertical) {
-                    x += 2;
-                    width -= 4;
-                    final int x2 = x + width / 2;
-                    final int x3 = x + width;
-
-                    int arrowThickness = width / 2;
-                    int maxArrowThickness = height / 2 - grooveSpace * 2;
-                    if (maxArrowThickness < 0) {
-                        maxArrowThickness = 0;
-                    }
-                    if (arrowThickness > maxArrowThickness) {
-                        arrowThickness = maxArrowThickness;
-                    }
-                    final int y2 = y + arrowThickness;
-                    final int y3 = y + height - arrowThickness;
-                    final int y4 = y + height;
-
-                    xPoints = new int[] { x, x2, x3, x3, x2, x };
-                    yPoints = new int[] { y2, y, y2, y3, y4, y3 };
-                }
-                else {
-                    y += 2;
-                    height -= 4;
-                    final int y2 = y + height / 2;
-                    final int y3 = y + height;
-
-                    int arrowThickness = height / 2;
-                    int maxArrowThickness = width / 2 - grooveSpace * 2;
-                    if (maxArrowThickness < 0) {
-                        maxArrowThickness = 0;
-                    }
-                    if (arrowThickness > maxArrowThickness) {
-                        arrowThickness = maxArrowThickness;
-                    }
-                    final int x2 = x + arrowThickness;
-                    final int x3 = x + width - arrowThickness;
-                    final int x4 = x + width;
-
-                    yPoints = new int[] { y, y2, y3, y3, y2, y };
-                    xPoints = new int[] { x2, x, x2, x3, x4, x3 };
-                }
-
-                //draw thumb
-                final Graphics2D g2d = (Graphics2D) g;
-                if (!hovered) {
-                    g2d.setComposite(alphaDim);
-                }
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                setGraphicsColor(g2d, backColor);
-                g2d.fillPolygon(xPoints, yPoints, xPoints.length);
-                setGraphicsColor(g2d, borderColor);
-                g2d.drawPolygon(xPoints, yPoints, xPoints.length);
-
-                //draw grooves if needed
-                if (vertical) {
-                    if (height > grooveSpace * 4) {
-                        setGraphicsColor(g2d, grooveColor);
-                        final int x2 = x + grooveSpace;
-                        final int x3 = x + width - grooveSpace;
-                        final int y3 = y + height / 2;
-                        final int y2 = y3 - grooveSpace;
-                        final int y4 = y3 + grooveSpace;
-                        g2d.drawLine(x2, y2, x3, y2);
-                        g2d.drawLine(x2, y3, x3, y3);
-                        g2d.drawLine(x2, y4, x3, y4);
-                    }
-                }
-                else if (width > grooveSpace * 4) {
-                    setGraphicsColor(g2d, grooveColor);
-                    final int y2 = y + grooveSpace;
-                    final int y3 = y + height - grooveSpace;
-                    final int x3 = x + width / 2;
-                    final int x2 = x3 - grooveSpace;
-                    final int x4 = x3 + grooveSpace;
-                    g2d.drawLine(x2, y2, x2, y3);
-                    g2d.drawLine(x3, y2, x3, y3);
-                    g2d.drawLine(x4, y2, x4, y3);
-                }
+                final int x = thumbBounds.x + (vertical ? 3 : 2);
+                final int y = thumbBounds.y + (vertical ? 2 : 3);
+                final int width = Math.max(1, thumbBounds.width - (vertical ? 6 : 4));
+                final int height = Math.max(1, thumbBounds.height - (vertical ? 4 : 6));
+                FDesign.drawScrollThumb((Graphics2D) g, x, y, width, height, hovered);
             }
         }
 

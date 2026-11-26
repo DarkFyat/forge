@@ -48,6 +48,7 @@ import forge.sound.MusicPlaylist;
 import forge.sound.SoundSystem;
 import forge.toolbox.CardFaceSymbols;
 import forge.toolbox.FAbsolutePositioner;
+import forge.toolbox.FDesign;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOverlay;
@@ -124,7 +125,9 @@ public enum FView {
 		// FControl has a method called "sizeComponents" which will fix this.
 
 		pnlInsets.add(pnlContent, BorderLayout.CENTER);
+		pnlInsets.setBackground(FDesign.BASE);
 		pnlInsets.setBackgroundTexture(FSkin.getIcon(FSkinProp.BG_TEXTURE));
+		pnlInsets.setBackgroundTextureOverlay(FDesign.withAlpha(FDesign.BASE, 72));
 		pnlInsets.setCornerDiameter(0);
 		pnlInsets.setBorder(new EmptyBorder(
 				SLayoutConstants.BORDER_T, SLayoutConstants.BORDER_T, 0, 0));

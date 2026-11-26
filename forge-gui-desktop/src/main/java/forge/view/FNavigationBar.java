@@ -31,6 +31,7 @@ import forge.localinstance.properties.ForgePreferences;
 import forge.menus.ForgeMenu;
 import forge.menus.LayoutMenu;
 import forge.toolbox.FButton;
+import forge.toolbox.FDesign;
 import forge.toolbox.FDigitalClock;
 import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinColor;
@@ -63,8 +64,9 @@ public class FNavigationBar extends FTitleBarBase {
         this.setLocation(0, -visibleHeight); //hide by default
         this.setPreferredSize(new Dimension(this.owner.getWidth(), visibleHeight));
         btnForge.setFocusable(false);
-        btnForge.setPreferredSize(new Dimension(100, 23));
-        btnForge.setForeground(foreColor);
+        btnForge.setPreferredSize(new Dimension(108, visibleHeight));
+        btnForge.setFont(FDesign.font(12, true));
+        btnForge.setForeground(FDesign.TEXT_ON_ACCENT);
         clock.setForeground(foreColor);
         addControls();
         setupPnlReveal();
@@ -379,7 +381,7 @@ public class FNavigationBar extends FTitleBarBase {
             setOpaque(false);
             this.setIcon(screen0.getTabIcon());
             this.setForeground(foreColor.alphaColor(unhoveredAlpha));
-            this.setFont(FSkin.getRelativeFont(fontSize));
+            this.setFont(FDesign.font(fontSize, false));
 
             int closeButtonOffset;
             if (screen.allowTabClose()) {
@@ -431,7 +433,7 @@ public class FNavigationBar extends FTitleBarBase {
         private void setSelected(final boolean selected0) {
             if (this.selected == selected0) { return; }
             this.selected = selected0;
-            this.setFont(selected0 ? FSkin.getRelativeBoldFont(fontSize) : FSkin.getRelativeFont(fontSize));
+            this.setFont(FDesign.font(fontSize, selected0));
             repaintSelf();
         }
 
@@ -472,12 +474,8 @@ public class FNavigationBar extends FTitleBarBase {
             final Graphics2D g2d = (Graphics2D)g;
             final int width = getWidth() - 1;
             final int height = visibleHeight - 1;
-            final int radius = 6;
             backColor = this.selected ? bottomEdgeColor : (this.hovered ? buttonHoverColor : buttonHoverColor.alphaColor(unhoveredAlpha));
-            FSkin.setGraphicsGradientPaint(g2d, 0, 0, backColor.stepColor(30), 0, height, backColor);
-            g.fillRoundRect(0, 0, width, height, radius, radius);
-            FSkin.setGraphicsColor(g, buttonBorderColor);
-            g.drawRoundRect(0, 0, width, height, radius, radius);
+            FDesign.drawNavTab(g2d, width, height, selected, hovered);
             super.paintComponent(g);
         }
 

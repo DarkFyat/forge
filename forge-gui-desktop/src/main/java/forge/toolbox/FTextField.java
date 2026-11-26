@@ -57,7 +57,7 @@ public class FTextField extends SkinnedTextField implements ITextField {
 
     public static final int HEIGHT = 25; //TODO: calculate this somehow instead of hard-coding it
     private static final FSkin.SkinColor textColor = FSkin.getColor(FSkin.Colors.CLR_TEXT);
-    private static final FSkin.SkinColor ghostTextColor = textColor.stepColor(20);
+    private static final FSkin.SkinColor ghostTextColor = textColor.stepColor(-70);
     private static final FSkin.SkinColor backColor = FSkin.getColor(FSkin.Colors.CLR_THEME2);
 
     private String ghostText;
@@ -67,7 +67,9 @@ public class FTextField extends SkinnedTextField implements ITextField {
         this.setForeground(textColor);
         this.setBackground(backColor);
         this.setCaretColor(textColor);
-        this.setMargin(new Insets(3, 3, 2, 3));
+        this.setFont(FDesign.font(13, false));
+        this.setBorder(FDesign.controlBorder());
+        this.setMargin(new Insets(4, 4, 4, 4));
         this.setOpaque(true);
 
         if (builder.maxLength > 0) {

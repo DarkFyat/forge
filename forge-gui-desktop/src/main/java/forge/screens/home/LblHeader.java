@@ -5,47 +5,34 @@ import java.awt.Graphics2D;
 
 import javax.swing.border.EmptyBorder;
 
-import forge.toolbox.FSkin;
-import forge.toolbox.FSkin.SkinColor;
+import forge.toolbox.FDesign;
 import forge.toolbox.FSkin.SkinnedLabel;
 
-/** 
- * Standardized header label for top of menu display panel.
- */
+/** Standardized header label for the top of a submenu. */
 @SuppressWarnings("serial")
 public class LblHeader extends SkinnedLabel {
-    private final SkinColor clr = FSkin.getColor(FSkin.Colors.CLR_THEME).stepColor(0);
-    private final SkinColor a100 = clr.alphaColor(100);
-    private final SkinColor d40 = clr.stepColor(-40);
-    private final SkinColor d80 = clr.stepColor(-80);
-
-    /**
-     * Constructor.
-     * @param txt0 {@link java.lang.String}
-     */
+    /** @param txt0 header text. */
     public LblHeader(final String txt0) {
         super(txt0);
-        this.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT));
-        this.setFont(FSkin.getRelativeFont(18));
-        this.setBorder(new EmptyBorder(5, 30, 0, 0));
+        setOpaque(false);
+        setForeground(FDesign.TEXT);
+        setFont(FDesign.font(16, true));
+        setBorder(new EmptyBorder(0, 16, 0, 16));
     }
 
     @Override
-    public void paintComponent(Graphics g) {
+    public void paintComponent(final Graphics g) {
         final Graphics2D g2d = (Graphics2D) g.create();
-        int w = getWidth();
-        int h = getHeight();
-
-        FSkin.setGraphicsColor(g2d, d80);
-        g2d.fillRect(0, 5, w, h - 5);
-
-        FSkin.setGraphicsColor(g2d, a100);
-        g2d.fillRect(5, 0, w - 5, h - 5);
-
-        FSkin.setGraphicsColor(g2d, d40);
-        g2d.drawRect(5, 0, w - 6, h - 6);
-
+        try {
+            g2d.setColor(FDesign.SURFACE_RAISED);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+            g2d.setColor(FDesign.ACCENT);
+            g2d.fillRect(0, 0, 4, getHeight());
+            g2d.setColor(FDesign.BORDER);
+            g2d.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1);
+        } finally {
+            g2d.dispose();
+        }
         super.paintComponent(g);
-        g2d.dispose();
     }
 }

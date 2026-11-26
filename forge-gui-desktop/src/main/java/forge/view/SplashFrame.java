@@ -6,22 +6,21 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package forge.view;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -33,34 +32,34 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import forge.localinstance.properties.ForgePreferences.FPref;
 import forge.localinstance.skin.FSkinProp;
 import forge.model.FModel;
+import forge.toolbox.FDesign;
 import forge.toolbox.FProgressBar;
 import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinIcon;
 import forge.toolbox.FSkin.SkinnedLabel;
 
-/**
- * Shows the splash frame as the application starts.
- */
+/** Shows the splash frame as the application starts. */
 @SuppressWarnings("serial")
 public class SplashFrame extends JFrame {
     private FProgressBar barProgress;
 
     private final MouseAdapter madClose = new MouseAdapter() {
         @Override
-        public void mouseEntered(final java.awt.event.MouseEvent evt) {
-            ((JButton) evt.getSource()).setBorder(BorderFactory.createLineBorder(Color.white));
-            ((JButton) evt.getSource()).setForeground(Color.white);
+        public void mouseEntered(final MouseEvent evt) {
+            final JButton button = (JButton) evt.getSource();
+            button.setForeground(FDesign.ACCENT);
+            button.setBorder(BorderFactory.createLineBorder(FDesign.ACCENT));
         }
 
         @Override
-        public void mouseExited(final java.awt.event.MouseEvent evt) {
-            ((JButton) evt.getSource()).setBorder(BorderFactory.createLineBorder(new Color(215, 208, 188)));
-            ((JButton) evt.getSource()).setForeground(new Color(215, 208, 188));
+        public void mouseExited(final MouseEvent evt) {
+            final JButton button = (JButton) evt.getSource();
+            button.setForeground(FDesign.TEXT_MUTED);
+            button.setBorder(BorderFactory.createLineBorder(FDesign.BORDER));
         }
     };
 
@@ -71,19 +70,15 @@ public class SplashFrame extends JFrame {
         }
     };
 
-    /**
-     * Create the frame; this <strong>must</strong> be called from an event
-     * dispatch thread.
-     * 
-     */
+    /** Create the frame; this must be called outside the EDT. */
     public SplashFrame() {
         super();
         FSkin.loadLight(FModel.getPreferences().getPref(FPref.UI_SKIN), true);
 
         try {
             SwingUtilities.invokeAndWait(SplashFrame.this::init);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -98,28 +93,28 @@ public class SplashFrame extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Loading Forge...");
 
-        // Insert JPanel to hold content above background
         final JPanel pnlContent = new JPanel();
         this.setContentPane(pnlContent);
         pnlContent.setLayout(null);
+        pnlContent.setBackground(FDesign.BASE);
 
         final JLabel lblDisclaimer = new JLabel("<html><center>"
                 + "Forge is not affiliated in any way with Wizards of the Coast."
                 + "<br>Forge is open source software, released under "
                 + "the GNU General Public License.</center></html>");
 
-        lblDisclaimer.setBounds(0, 300, 450, 20);
-        lblDisclaimer.setFont(new Font("Tahoma", Font.PLAIN, 9));
+        lblDisclaimer.setBounds(24, 300, 402, 34);
+        lblDisclaimer.setFont(FDesign.font(10, false));
         lblDisclaimer.setHorizontalAlignment(SwingConstants.CENTER);
-        lblDisclaimer.setForeground(UIManager.getColor("ProgressBar.selectionForeground"));
+        lblDisclaimer.setForeground(FDesign.TEXT_MUTED);
         pnlContent.add(lblDisclaimer);
 
-        final JButton btnClose = new JButton("X");
-        btnClose.setBounds(420, 15, 15, 15);
-        btnClose.setForeground(new Color(215, 208, 188));
-        btnClose.setBorder(BorderFactory.createLineBorder(new Color(215, 208, 188)));
-        btnClose.setOpaque(false);
-        btnClose.setBackground(new Color(0, 0, 0));
+        final JButton btnClose = new JButton("×");
+        btnClose.setBounds(410, 14, 26, 26);
+        btnClose.setForeground(FDesign.TEXT_MUTED);
+        btnClose.setFont(FDesign.font(16, false));
+        btnClose.setBackground(FDesign.SURFACE_RAISED);
+        btnClose.setBorder(BorderFactory.createLineBorder(FDesign.BORDER));
         btnClose.setFocusPainted(false);
         pnlContent.add(btnClose);
 
@@ -128,8 +123,8 @@ public class SplashFrame extends JFrame {
         pnlContent.getInputMap().put(KeyStroke.getKeyStroke("ESCAPE"), "escAction");
         pnlContent.getActionMap().put("escAction", actClose);
 
-        barProgress.setString("Your Forge is warming up");
-        barProgress.setBounds(20, 373, 410, 57);
+        barProgress.setString("Preparing your multiverse");
+        barProgress.setBounds(24, 373, 402, 48);
         pnlContent.add(barProgress);
 
         final SkinnedLabel bgLabel = new SkinnedLabel();

@@ -23,6 +23,7 @@ public class FProgressBar extends JProgressBar implements IProgressBar {
     public FProgressBar() {
         super();
         reset();
+        setFont(FDesign.font(11, true));
         setStringPainted(true);
     }
 

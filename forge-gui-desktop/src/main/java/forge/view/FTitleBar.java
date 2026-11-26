@@ -1,18 +1,19 @@
 package forge.view;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Image;
 
 import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
 import javax.swing.SpringLayout;
 
+import forge.toolbox.FDesign;
 import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedLabel;
 
 @SuppressWarnings("serial")
 public class FTitleBar extends FTitleBarBase {
-    private static final FSkin.SkinFont skinFont = FSkin.getFont();
+    private static final Font titleFont = FDesign.font(13, true);
 
     private final SkinnedLabel lblTitle = new SkinnedLabel();
 
@@ -23,14 +24,14 @@ public class FTitleBar extends FTitleBarBase {
         setTitle(owner0.getTitle()); //set default title based on frame title
         setIconImage(owner0.getIconImage()); //set default icon image based on frame icon image
         lblTitle.setForeground(foreColor);
-        lblTitle.setFont(skinFont);
+        lblTitle.setFont(titleFont);
         addControls();
     }
 
     @Override
     protected void addControls() {
         add(lblTitle);
-        layout.putConstraint(SpringLayout.WEST, lblTitle, 5, SpringLayout.WEST, this);
+        layout.putConstraint(SpringLayout.WEST, lblTitle, 12, SpringLayout.WEST, this);
         layout.putConstraint(SpringLayout.SOUTH, lblTitle, -5, SpringLayout.SOUTH, this);
         super.addControls();
     }
@@ -53,11 +54,12 @@ public class FTitleBar extends FTitleBarBase {
     }
 
     private void updatePreferredSize() {
-        int width = skinFont.measureTextWidth(JOptionPane.getRootFrame().getGraphics(), this.lblTitle.getText());
+        final String title = this.lblTitle.getText() == null ? "" : this.lblTitle.getText();
+        int width = lblTitle.getFontMetrics(titleFont).stringWidth(title);
         if (this.lblTitle.getIcon() != null) {
             width += this.lblTitle.getIcon().getIconWidth() + this.lblTitle.getIconTextGap();
         }
         width += btnClose.getPreferredSize().width;
-        this.setPreferredSize(new Dimension(width + 10, visibleHeight));
+        this.setPreferredSize(new Dimension(width + 24, visibleHeight));
     }
 }

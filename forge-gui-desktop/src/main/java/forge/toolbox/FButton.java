@@ -17,18 +17,18 @@
  */
 package forge.toolbox;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.RenderingHints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
@@ -38,31 +38,32 @@ import forge.gui.framework.ILocalRepaint;
 import forge.gui.interfaces.IButton;
 import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FSkin.Colors;
-import forge.toolbox.FSkin.SkinImage;
 import forge.toolbox.FSkin.SkinnedButton;
+import forge.toolbox.FSkin.SkinColor;
 
 /**
- * The core JButton used throughout the Forge project. Follows skin font and
- * theme button styling.
+ * The core JButton used throughout the desktop client.
  *
+ * <p>The old implementation stitched together six states from bitmap strips.
+ * Those assets are retained for user-installed mobile themes, but desktop
+ * buttons are now painted from {@link FDesign}: crisp at every DPI, consistent
+ * with native controls, and responsive to hover, press, focus and toggle.</p>
  */
 @SuppressWarnings("serial")
 public class FButton extends SkinnedButton implements ILocalRepaint, IButton {
-
-    /** The img r. */
-    private SkinImage imgL;
-    private SkinImage imgM;
-    private SkinImage imgR;
-    private int w, h = 0;
-    private boolean allImagesPresent = false;
     private boolean toggle = false;
     private boolean hovered = false;
-    private final AlphaComposite disabledComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f);
-    private KeyAdapter klEnter;
+    private boolean pressed = false;
+    private final KeyAdapter enterToClick = new KeyAdapter() {
+        @Override
+        public void keyPressed(final KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                doClick();
+            }
+        }
+    };
 
-    /**
-     * Instantiates a new FButton.
-     */
+    /** Instantiates a new FButton. */
     public FButton() {
         this("");
     }
@@ -70,142 +71,76 @@ public class FButton extends SkinnedButton implements ILocalRepaint, IButton {
     public FButton(final String label) {
         super(label);
         this.setOpaque(false);
-        this.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT));
-        this.setBackground(Color.red);
-        this.setFocusPainted(false);
-        this.setBorder(BorderFactory.createEmptyBorder());
         this.setContentAreaFilled(false);
-        this.setMargin(new Insets(0, 25, 0, 25));
-        this.setFont(FSkin.getBoldFont(14));
-        this.imgL = FSkin.getIcon(FSkinProp.IMG_BTN_UP_LEFT);
-        this.imgM = FSkin.getIcon(FSkinProp.IMG_BTN_UP_CENTER);
-        this.imgR = FSkin.getIcon(FSkinProp.IMG_BTN_UP_RIGHT);
+        this.setFocusPainted(false);
+        this.setBorderPainted(false);
+        this.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 12));
+        this.setMargin(new Insets(0, 18, 0, 18));
+        this.setFont(FDesign.font(14, true));
+        this.setForeground(FDesign.TEXT_ON_ACCENT);
+        this.setBackground(FDesign.ACCENT);
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        if ((this.imgL != null) && (this.imgM != null) && (this.imgR != null)) {
-            this.allImagesPresent = true;
-        }
-
-        klEnter = new KeyAdapter() {
-            @Override
-            public void keyPressed(final KeyEvent e) {
-                if (e.getKeyCode() == 10) {
-                    doClick();
-                }
-            }
-        };
-
-        // Mouse events
-        this.addMouseListener(new java.awt.event.MouseAdapter() {
+        this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(final MouseEvent evt) {
                 hovered = true;
-                if (isToggled() || !isEnabled()) { return; }
-                resetImg();
                 repaintSelf();
             }
 
             @Override
             public void mouseExited(final MouseEvent evt) {
                 hovered = false;
-                if (isToggled() || !isEnabled()) { return; }
-                resetImg();
+                pressed = false;
                 repaintSelf();
             }
 
             @Override
             public void mousePressed(final MouseEvent evt) {
-                if (isToggled() || !isEnabled()) { return; }
-                imgL = FSkin.getIcon(FSkinProp.IMG_BTN_DOWN_LEFT);
-                imgM = FSkin.getIcon(FSkinProp.IMG_BTN_DOWN_CENTER);
-                imgR = FSkin.getIcon(FSkinProp.IMG_BTN_DOWN_RIGHT);
+                pressed = isEnabled();
                 repaintSelf();
             }
 
             @Override
             public void mouseReleased(final MouseEvent evt) {
-                if (isToggled() || !isEnabled()) { return; }
-                resetImg();
+                pressed = false;
                 repaintSelf();
             }
         });
 
-        // Focus events
         this.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(final FocusEvent e) {
-                if (isToggled()) { return; }
-                resetImg();
-                addKeyListener(klEnter);
+                addKeyListener(enterToClick);
                 repaintSelf();
             }
 
             @Override
             public void focusLost(final FocusEvent e) {
-                if (isToggled()) { return; }
-                resetImg();
-                removeKeyListener(klEnter);
+                removeKeyListener(enterToClick);
                 repaintSelf();
             }
         });
     }
 
-    private void resetImg() {
-        if (hovered) {
-            imgL = FSkin.getIcon(FSkinProp.IMG_BTN_OVER_LEFT);
-            imgM = FSkin.getIcon(FSkinProp.IMG_BTN_OVER_CENTER);
-            imgR = FSkin.getIcon(FSkinProp.IMG_BTN_OVER_RIGHT);
-        }
-        else if (isFocusOwner()) {
-            imgL = FSkin.getIcon(FSkinProp.IMG_BTN_FOCUS_LEFT);
-            imgM = FSkin.getIcon(FSkinProp.IMG_BTN_FOCUS_CENTER);
-            imgR = FSkin.getIcon(FSkinProp.IMG_BTN_FOCUS_RIGHT);
-        } else {
-            imgL = FSkin.getIcon(FSkinProp.IMG_BTN_UP_LEFT);
-            imgM = FSkin.getIcon(FSkinProp.IMG_BTN_UP_CENTER);
-            imgR = FSkin.getIcon(FSkinProp.IMG_BTN_UP_RIGHT);
-        }
-    }
-
     @Override
-    public void setEnabled(final boolean b0) {
-        if (!b0) {
-            imgL = FSkin.getIcon(FSkinProp.IMG_BTN_DISABLED_LEFT);
-            imgM = FSkin.getIcon(FSkinProp.IMG_BTN_DISABLED_CENTER);
-            imgR = FSkin.getIcon(FSkinProp.IMG_BTN_DISABLED_RIGHT);
+    public void setEnabled(final boolean enabled) {
+        if (!enabled) {
+            hovered = false;
+            pressed = false;
         }
-        else {
-            resetImg();
-        }
-
-        super.setEnabled(b0);
+        super.setEnabled(enabled);
         repaintSelf();
     }
 
-    /**
-     * Button toggle state, for a "permanently pressed" functionality, e.g. as a tab.
-     *
-     * @return boolean
-     */
+    /** @return whether this button is permanently pressed, e.g. as a tab. */
     public boolean isToggled() {
         return toggle;
     }
 
-    /** @param b0 &emsp; boolean. */
-    public void setToggled(final boolean b0) {
-        if (b0) {
-            imgL = FSkin.getIcon(FSkinProp.IMG_BTN_TOGGLE_LEFT);
-            imgM = FSkin.getIcon(FSkinProp.IMG_BTN_TOGGLE_CENTER);
-            imgR = FSkin.getIcon(FSkinProp.IMG_BTN_TOGGLE_RIGHT);
-        }
-        else if (isEnabled()) {
-            resetImg();
-        }
-        else {
-            imgL = FSkin.getIcon(FSkinProp.IMG_BTN_DISABLED_LEFT);
-            imgM = FSkin.getIcon(FSkinProp.IMG_BTN_DISABLED_CENTER);
-            imgR = FSkin.getIcon(FSkinProp.IMG_BTN_DISABLED_RIGHT);
-        }
-        this.toggle = b0;
+    /** @param toggled whether the button should appear permanently pressed. */
+    public void setToggled(final boolean toggled) {
+        this.toggle = toggled;
         repaintSelf();
     }
 
@@ -227,28 +162,14 @@ public class FButton extends SkinnedButton implements ILocalRepaint, IButton {
 
     @Override
     protected void paintComponent(final Graphics g) {
-        if (!allImagesPresent) {
-            return;
+        final Graphics2D g2d = (Graphics2D) g.create();
+        try {
+            FDesign.drawButton(g2d, getWidth(), getHeight(), hovered, pressed,
+                    toggle, isFocusOwner(), isEnabled());
+            super.paintComponent(g2d);
+        } finally {
+            g2d.dispose();
         }
-
-        final Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-
-        if (!isEnabled()) {
-            g2d.setComposite(this.disabledComposite);
-        }
-
-        w = getWidth();
-        h = getHeight();
-
-        FSkin.drawImage(g2d, imgL, 0, 0, this.h, this.h);
-        FSkin.drawImage(g2d, imgM, this.h, 0, this.w - (2 * this.h), this.h);
-        FSkin.drawImage(g2d, imgR, this.w - this.h, 0, this.h, this.h);
-
-        super.paintComponent(g);
     }
 
     @Override
@@ -258,7 +179,11 @@ public class FButton extends SkinnedButton implements ILocalRepaint, IButton {
 
     @Override
     public void setImage(final FSkinProp color) {
-        setForeground(FSkin.getColor(Colors.fromSkinProp(color)));
+        final Colors token = Colors.fromSkinProp(color);
+        final SkinColor skinColor = token == null ? null : FSkin.getColor(token);
+        if (skinColor != null) {
+            setForeground(skinColor);
+        }
     }
 
     @Override
